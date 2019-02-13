@@ -1,6 +1,3 @@
-using ClusterTrees
-using Test
-
-@testset "ClusterTrees.jl" begin
-    # Write your own tests here.
-end
+include("test_trees.jl")
+include("test_lvltree.jl")
+include("test_blocktree.jl")

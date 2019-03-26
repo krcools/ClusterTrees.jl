@@ -19,7 +19,7 @@ end
 
 function ClusterTrees.children(b::BlockTree, node)
     test_chds = ClusterTrees.children(testcluster(b), node[1])
-    trial_chds = ClusterTrees.children(testcluster(b), node[2])
+    trial_chds = ClusterTrees.children(trialcluster(b), node[2])
     ((ch[1],ch[2]) for ch in Iterators.product(test_chds, trial_chds))
 end
 

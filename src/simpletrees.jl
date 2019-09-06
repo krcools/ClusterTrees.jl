@@ -31,7 +31,6 @@ end
 
 Base.getindex(tree::SimpleTree, i::Int) = tree.nodes[i]
 
-
 # AbstractTrees.printnode(io::IO, tree::SimpleTree) = show(io, data(tree))
 
 end # module SimpleTrees

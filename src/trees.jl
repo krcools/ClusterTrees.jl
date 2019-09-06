@@ -28,17 +28,17 @@ Insert a node carrying 'data' as a new child of 'parent'
 function insert! end
 
 """
-    The expression `children(tree,node)` returns an iterator that will produce
-    a sequence of node iterators. These values do not have a lot of meaning by
-    themselves, but can be used in conjunction with the tree object. E.g:
+The expression `children(tree,node)` returns an iterator that will produce
+a sequence of nodes. These values do not have a lot of meaning by
+themselves, but can be used in conjunction with the tree object. E.g:
 
-        data(tree, node_itr)
-        children(tree, node_itr)
+    data(tree, node_itr)
+    children(tree, node_itr)
 
-    In fact, the node iterators should be regarded as lightweight proxies for
-    the underlying node and their attached data payload. The node objects
-    themselves are of limited use for the client programmer as they are an
-    implementation detail of the specific tree being used.
+In fact, the node iterators should be regarded as lightweight proxies for
+the underlying node and their attached data payload. The node objects
+themselves are of limited use for the client programmer as they are an
+implementation detail of the specific tree being used.
 """
 function children end
 
@@ -68,12 +68,12 @@ end
 function route! end
 
 """
-    update!(f, tree, node, data, router!)
+    update!(f, tree, state, data, target)
 
-Algorithm to update or add nodes of the tree. `router!` and `updater!` are
+Algorithm to update or add data to the tree. `router!` and `updater!` are
 user supplied functions:
 
-    router!(tree, node)
+    route!(tree, state, target)
 
 Returns the next candidate `node` until the node for insertion is reaches. Note
 that this function potentially created new nodes. Arrival at the destination is
@@ -95,6 +95,12 @@ function update!(f, tree, state, data, target)
     return node
 end
 
+"""
+    DepthFirstIterator(tree, node)
+
+Creates an iterable that when traversed visits the nodes of the subtree `(tree, node)`
+in depthfirst order. Children of a node are visited before that node itself.
+"""
 struct DepthFirstIterator{T,N}
     tree::T
     node::N

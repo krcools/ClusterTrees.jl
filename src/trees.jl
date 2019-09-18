@@ -135,3 +135,25 @@ end
 function leaves(tree, node=root(tree))
     Iterators.filter(n->!haschildren(tree,n), DepthFirstIterator(tree,node))
 end
+
+struct ChildIterator{T,N}
+    tree::T
+    node::N
+end
+
+Base.IteratorSize(cv::ChildIterator) = Base.SizeUnknown()
+
+struct Mutable{T}
+    tree::T
+end
+
+"""
+    mutable(tree)
+
+Return a mutable view on the tree. Because it is typically much easier and cheaper
+to implement iterators that simply visit the tree nodes than to modify them, the user
+is required to explicitly signal their desire to mutate the tree by calling this
+function. Creating nodes for the mutable view (using the `root` and `children` functions)
+will return enriched iterators that allow for insertion of child nodes.
+"""
+mutable(tree) = Mutable(tree)

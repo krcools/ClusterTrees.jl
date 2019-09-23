@@ -17,8 +17,6 @@ struct PointerBasedTree{N<:Node} <: APBTree
     root::Int
 end
 
-ClusterTrees.root(tree::PointerBasedTree) = tree.root
-
 getnode(tree::PointerBasedTree, node_idx) = tree.nodes[node_idx]
 nextsibling(tree::PointerBasedTree, node_idx) = getnode(tree, node_idx).next_sibling
 parent(tree::PointerBasedTree, node_idx) = getnode(tree, node_idx).parent
@@ -43,6 +41,7 @@ end
 
 Base.IteratorSize(cv::ChildView) = Base.SizeUnknown()
 
+ClusterTrees.root(tree::PointerBasedTree) = tree.root
 ClusterTrees.children(tree::APBTree, node=ClusterTrees.root(tree)) = ChildView(tree, node)
 ClusterTrees.haschildren(tree::APBTree, node) = (firstchild(tree,node) >= 1)
 ClusterTrees.data(tree::PointerBasedTree, node=ClusterTrees.root(tree)) = data(getnode(tree, node))

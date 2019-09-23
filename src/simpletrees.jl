@@ -33,26 +33,49 @@ ClusterTrees.data(tree::ClusterTrees.Mutable{<:SimpleTree}, node) = tree.tree.no
 ClusterTrees.children(tree::ClusterTrees.Mutable{<:SimpleTree}, node) = ClusterTrees.ChildIterator(tree, node)
 ClusterTrees.haschildren(tree::ClusterTrees.Mutable{<:SimpleTree}, node) = (tree.tree.nodes[last(node)].num_children > 0)
 
-function Base.iterate(itr::ClusterTrees.ChildIterator{ClusterTrees.Mutable{SimpleTree{N}}} where {N})
-    initial_state = 0
-    iterate(itr, initial_state)
-end
-
-function Base.iterate(itr::ClusterTrees.ChildIterator{ClusterTrees.Mutable{SimpleTree{N}}} where {N}, state)
-    state == itr.tree.tree.nodes[last(itr.node)].num_children && return nothing
+start(itr::ClusterTrees.ChildIterator{ClusterTrees.Mutable{SimpleTree{N}}} where {N}) = 0
+done(itr::ClusterTrees.ChildIterator{ClusterTrees.Mutable{SimpleTree{N}}} where {N}, state) = (state == itr.tree.tree.nodes[last(itr.node)].num_children)
+function next(itr::ClusterTrees.ChildIterator{ClusterTrees.Mutable{SimpleTree{N}}} where {N}, state)
     parent_idx = last(itr.node)
     child_idx = parent_idx + state + 1
     child = itr.tree.tree.nodes[child_idx]
-    return [itr.node; child_idx], state + child.num_children + 1
+    [itr.node; child_idx], state + child.num_children + 1
 end
 
+Base.iterate(itr::ClusterTrees.ChildIterator{ClusterTrees.Mutable{SimpleTree{N}}} where {N},
+    state = start(itr)) = done(itr, state) ? nothing : next(itr, state)
 
-function insert_child!(tree::ClusterTrees.Mutable{<:SimpleTree}, parent, data)
+# function Base.iterate(itr::ClusterTrees.ChildIterator{ClusterTrees.Mutable{SimpleTree{N}}} where {N})
+#     initial_state = 0
+#     iterate(itr, initial_state)
+# end
+#
+# function Base.iterate(itr::ClusterTrees.ChildIterator{ClusterTrees.Mutable{SimpleTree{N}}} where {N}, state)
+#     state == itr.tree.tree.nodes[last(itr.node)].num_children && return nothing
+#     parent_idx = last(itr.node)
+#     child_idx = parent_idx + state + 1
+#     child = itr.tree.tree.nodes[child_idx]
+#     return [itr.node; child_idx], state + child.num_children + 1
+# end
+
+
+# function insert_child!(tree::ClusterTrees.Mutable{<:SimpleTree}, parent, data)
+#     parent_idx = last(parent)
+#     insert!(tree.tree.nodes, parent_idx+1, TreeNode(0,data))
+#     for i in reverse(parent)
+#         node = tree.tree.nodes[i]
+#         tree.tree.nodes[i] = TreeNode(node.num_children+1, node.data)
+#     end
+# end
+
+function insert!(itr::ClusterTrees.ChildIterator{ClusterTrees.Mutable{SimpleTree{N}}} where {N}, item, state)
+    parent = itr.node
     parent_idx = last(parent)
-    insert!(tree.tree.nodes, parent_idx+1, TreeNode(0,data))
+    child_idx = parent_idx + state + 1
+    insert!(itr.tree.tree.nodes, child_idx, TreeNode(0,item))
     for i in reverse(parent)
-        node = tree.tree.nodes[i]
-        tree.tree.nodes[i] = TreeNode(node.num_children+1, node.data)
+        node = itr.tree.tree.nodes[i]
+        itr.tree.tree.nodes[i] = TreeNode(node.num_children+1, node.data)
     end
 end
 

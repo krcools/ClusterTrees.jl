@@ -68,7 +68,7 @@ Base.iterate(itr::ClusterTrees.ChildIterator{ClusterTrees.Mutable{SimpleTree{N}}
 #     end
 # end
 
-function insert!(itr::ClusterTrees.ChildIterator{ClusterTrees.Mutable{SimpleTree{N}}} where {N}, item, state)
+function Base.insert!(itr::ClusterTrees.ChildIterator{ClusterTrees.Mutable{SimpleTree{N}}} where {N}, item, state)
     parent = itr.node
     parent_idx = last(parent)
     child_idx = parent_idx + state + 1

@@ -1,6 +1,8 @@
 module PointerBasedTrees
 using ClusterTrees
 
+import ClusterTrees.ChildIterator
+
 mutable struct Node{T}
     data::T
     num_children::Int
@@ -22,27 +24,38 @@ nextsibling(tree::PointerBasedTree, node_idx) = getnode(tree, node_idx).next_sib
 parent(tree::PointerBasedTree, node_idx) = getnode(tree, node_idx).parent
 firstchild(tree::PointerBasedTree, node_idx) = getnode(tree, node_idx).first_child
 
-struct ChildView{T<:APBTree,N}
-    tree::T
-    node_idx::N
+start(itr::ChildIterator{<:APBTree}) = firstchild(itr.tree, itr.node)
+# getnode(itr.tree, itr.node).first_child
+function done(itr::ChildIterator{<:APBTree}, state)
+    state < 1 && return true
+    sibling_par = parent(itr.tree, state)
+    sibling_par != itr.node && return true
+    return false
 end
 
-Base.iterate(itr::ChildView) = iterate(itr, firstchild(itr.tree, itr.node_idx))
-function Base.iterate(itr::ChildView, state)
-    # Check if state is a valid node pointer
-    state < 1 && return nothing
-    # If yes, check that the parent of the corresponding node equals
-    # the original parent. If not, we are looking at a distant *cousin*
-    sibling_par = parent(itr.tree, state)
-    sibling_par != itr.node_idx && return nothing
+function next(itr::ChildIterator{<:APBTree}, state)
     sibling_idx = nextsibling(itr.tree, state)
     return (state, sibling_idx)
 end
 
-Base.IteratorSize(cv::ChildView) = Base.SizeUnknown()
+# Base.iterate(itr::ChildIterator) = iterate(itr, firstchild(itr.tree, itr.node))
+# function Base.iterate(itr::ChildIterator, state)
+#     # Check if state is a valid node pointer
+#     state < 1 && return nothing
+#     # If yes, check that the parent of the corresponding node equals
+#     # the original parent. If not, we are looking at a distant *cousin*
+#     sibling_par = parent(itr.tree, state)
+#     sibling_par != itr.node && return nothing
+#     sibling_idx = nextsibling(itr.tree, state)
+#     return (state, sibling_idx)
+# end
+
+Base.iterate(itr::ChildIterator{<:APBTree}, st = start(itr)) = done(itr,st) ? nothing : next(itr,st)
+
+Base.IteratorSize(cv::ChildIterator) = Base.SizeUnknown()
 
 ClusterTrees.root(tree::PointerBasedTree) = tree.root
-ClusterTrees.children(tree::APBTree, node=ClusterTrees.root(tree)) = ChildView(tree, node)
+ClusterTrees.children(tree::APBTree, node=ClusterTrees.root(tree)) = ChildIterator(tree, node)
 ClusterTrees.haschildren(tree::APBTree, node) = (firstchild(tree,node) >= 1)
 ClusterTrees.data(tree::PointerBasedTree, node=ClusterTrees.root(tree)) = data(getnode(tree, node))
 
@@ -83,11 +96,9 @@ function ClusterTrees.insert!(tree::PointerBasedTree, data; parent, next, prev)
 
     fs = firstchild(tree, parent)
     if fs < 1 || fs == next
-        # getnode(tree, parent).first_child = length(tree.nodes)
         setfirstchild!(tree, parent, length(tree.nodes))
     end
     if !(prev < 1)
-        # getnode(tree, prev).next_sibling = length(tree.nodes)
         setnextsibling!(tree, prev, length(tree.nodes))
     end
     return length(tree.nodes)

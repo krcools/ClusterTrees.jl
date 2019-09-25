@@ -30,3 +30,11 @@ ClusterTrees.update!
 
 
 ## Pointer based trees
+
+Tree implementations based on pointers (or indices into Vector-backed memory buffers) are very popular and allow for the efficient implementation of most common traversal and mutation patterns. These trees support an enriched API. We only consider trees with nodes that link back to their parents.
+
+```@docs
+nextsibling
+parent
+firstchild
+```

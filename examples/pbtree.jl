@@ -65,30 +65,28 @@ function isontherighttrack(tree, node, meta)
     ClusterTrees.data(tree, node).sector == sector
 end
 
-function newnode!(tree, node, prev, meta)
-    sector, center, size = meta
-    data = Data(sector)
-    bef = prev < 1 ? 0 : ClusterTrees.PointerBasedTrees.getnode(tree, prev).next_sibling
-    ClusterTrees.insert!(tree, data, parent=node, next=bef, prev=prev)
-end
+import ClusterTrees: start, next, done
 
 function ClusterTrees.route!(tree::ClusterTrees.PointerBasedTrees.PointerBasedTree, state, target)
 
     (parent, prev_fat_par, meta) = state
-    @show state
-    @assert prev_fat_par < 1 || ClusterTrees.haschildren(tree, prev_fat_par)
     reached(tree, target, meta) && return state
 
     meta = directions(tree, target, meta)
     prev_fat_child = prev_fat_par < 1 ? 0 : lastnonemptychild(tree, prev_fat_par)
-    prev_child = prev_fat_par < 1 ? 0 : lastchild(tree, prev_fat_par)
-    for child in ClusterTrees.children(tree, parent)
+
+    chds = children(tree, parent)
+    pos = start(chds)
+    while !done(chds, pos)
+        child, newpos = next(chds, pos)
         isontherighttrack(tree, child, meta) && return (child, prev_fat_child, meta)
         ClusterTrees.haschildren(tree, child) && (prev_fat_child = child)
-        prev_child = child
+        pos = newpos
     end
 
-    child = newnode!(tree, parent, prev_child, meta)
+    sector, center, size = meta
+    child = insert!(chds, Data(sector), pos)
+
     return child, prev_fat_child, meta
 end
 

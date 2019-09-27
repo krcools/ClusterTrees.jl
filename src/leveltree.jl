@@ -40,7 +40,13 @@ _setheight!(node::HNode, height) = HNode(node.node, height)
 setheight!(tree::LevelledTree, node, height) = tree.nodes[node] = _setheight!(tree.nodes[node], height)
 
 
-function ClusterTrees.insert!(tree::LevelledTree, data; parent, next, prev)
+# function ClusterTrees.insert!(tree::LevelledTree, data; parent, next, prev)
+function ClusterTrees.insert!(chd_itr::ClusterTrees.ChildIterator{<:LevelledTree}, data, pos)
+
+    tree = chd_itr.tree
+    parent = chd_itr.node
+    prev, next = pos
+
     push!(tree.nodes, HNode(ClusterTrees.PointerBasedTrees.Node(data, 0, next, parent, 0), 0))
     fs = ClusterTrees.PointerBasedTrees.firstchild(tree, parent)
     if fs < 1 || fs == next
@@ -58,6 +64,31 @@ function ClusterTrees.insert!(tree::LevelledTree, data; parent, next, prev)
         id = ClusterTrees.PointerBasedTrees.parent(tree, id)
         id < 1 && break
         h += 1
+    end
+
+    depth = 1
+    id = length(tree.nodes)
+    while true
+        id = ClusterTrees.PointerBasedTrees.parent(tree, id)
+        id < 1 && break
+        depth += 1
+    end
+
+    new_node_idx = length(tree.nodes)
+    prev_child = prev
+    if prev_child < 1
+        prev_node_idx = findprevnode(tree, new_node_idx)
+        prev_node_idx < 1 || ClusterTrees.PointerBasedTrees.setnextsibling!(tree, prev_node_idx, new_node_idx)
+        if prev_node_idx < 1
+            depth > length(tree.levels) && resize!(tree.levels,depth)
+            tree.levels[depth] = new_node_idx
+        end
+    end
+
+    next_child = next
+    if next_child < 1
+        next_node_idx = findnextnode(tree, new_node_idx)
+        ClusterTrees.PointerBasedTrees.setnextsibling!(tree, new_node_idx, next_node_idx)
     end
 
     return length(tree.nodes)
@@ -115,50 +146,40 @@ const hilbert_positions = [
     [4,5,7,6,3,2,0,1],
     [6,1,7,0,5,2,4,3]]
 
+import ClusterTrees: start, next, done
 
-function ClusterTrees.route!(tree::LevelledTree, state, router)
+function ClusterTrees.route!(tree::LevelledTree, state, destination)
 
-    point = router.target_point
-    smallest_box_size = router.smallest_box_size
+    point = destination.target_point
+    smallest_box_size = destination.smallest_box_size
 
     node_idx, center, size, sfc_state, depth = state
     size <= smallest_box_size && return state
     target_sector, target_center, target_size = sector_center_size(point, center, size)
     target_pos = hilbert_positions[sfc_state][target_sector+1] + 1
     target_sfc_state = hilbert_states[sfc_state][target_sector+1] + 1
-    prev_child, next_child = 0, 0
-    for child in ClusterTrees.children(tree, node_idx)
+
+    chds = ClusterTrees.children(tree, node_idx)
+    pos = start(chds)
+    while !done(chds, pos)
+        child, newpos = next(chds, pos)
         child_sector = ClusterTrees.data(tree,child).sector
         child_pos = hilbert_positions[sfc_state][child_sector+1]+1
-        target_pos < child_pos  && (next_child = child; break)
+        target_pos < child_pos  && break
         if child_sector == target_sector
-            @assert contains(point, target_center, target_size)
             return (child, target_center, target_size, target_sfc_state, depth+1)
         end
-        prev_child = child
+        pos = newpos
     end
+
     data = Data(target_sector, Int[])
-    new_node_idx = ClusterTrees.insert!(tree, data, next=next_child, prev=prev_child, parent=node_idx)
-
-    if prev_child < 1
-        prev_node_idx = findprevnode(tree, router, new_node_idx)
-        prev_node_idx < 1 || ClusterTrees.PointerBasedTrees.setnextsibling!(tree, prev_node_idx, new_node_idx)
-        if prev_node_idx < 1
-            depth+1 > length(tree.levels) && resize!(tree.levels,depth+1)
-            tree.levels[depth+1] = new_node_idx
-        end
-    end
-
-    if next_child < 1
-        next_node_idx = findnextnode(tree, router, new_node_idx)
-        ClusterTrees.PointerBasedTrees.setnextsibling!(tree, new_node_idx, next_node_idx)
-    end
+    new_node_idx = insert!(chds, data, pos)
 
     return new_node_idx, target_center, target_size, target_sfc_state, depth+1
 end
 
 
-function findprevnode(tree::LevelledTree, target, new_node)
+function findprevnode(tree::LevelledTree, new_node)
 
     prev_node = 0
     prev_branch = 0
@@ -201,7 +222,7 @@ function findprevnode(tree::LevelledTree, target, new_node)
 end
 
 
-function findnextnode(tree::LevelledTree, target, new_node)
+function findnextnode(tree::LevelledTree, new_node)
 
     prev_node = 0
     prev_branch = 0

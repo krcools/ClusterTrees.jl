@@ -31,8 +31,11 @@ Base.length(itr::ClusterTrees.DepthFirstIterator{T}) where {T<:Octree} = length(
 # Tree API
 ClusterTrees.data(tree::Octree, node) = data(tree.pbtree, node)
 ClusterTrees.children(tree::Octree, node) = children(tree.pbtree, node)
-ClusterTrees.insert!(tree::Octree, data; next, parent, prev) = ClusterTrees.insert!(tree.pbtree, data, next=next, parent=parent, prev=prev)
 ClusterTrees.root(tree::Octree) = root(tree.pbtree)
+# ClusterTrees.insert!(tree::Octree, data; next, parent, prev) = ClusterTrees.insert!(tree.pbtree, data, next=next, parent=parent, prev=prev)
+
+import ClusterTrees.ChildIterator
+Base.insert!(chds::ChildIterator{<:Octree}, item, pos) = insert!(tree.pbtree, item, pos)
 
 # PointerBasedTrees API
 ClusterTrees.PointerBasedTrees.getnode(tree::Octree, node)  = ClusterTrees.PointerBasedTrees.getnode(tree.pbtree, node)
@@ -85,34 +88,36 @@ struct Router{T,P}
     target_point::P
 end
 
-function route!(tree::Octree, state, router)
+import ClusterTrees: start, next, done
 
-    point = router.target_point
-    smallest_box_size = router.smallest_box_size
+function route!(tree::Octree, state, destination)
+
+    point = destination.target_point
+    smallest_box_size = destination.smallest_box_size
 
     node_idx, center, size, sfc_state = state
     size <= smallest_box_size && return state
     target_sector, target_center, target_size = sector_center_size(point, center, size)
     target_pos = hilbert_positions[sfc_state][target_sector+1] + 1
     target_sfc_state = hilbert_states[sfc_state][target_sector+1] + 1
-    prev_child, next_child = 0, 0
-    for child in ClusterTrees.children(tree, node_idx)
-        child_sector = ClusterTrees.data(tree,child).sector
+
+    chds = children(tree, node_idx)
+    pos = start(chds)
+    while !done(chds, pos)
+        child, newpos = next(chds, pos)
+        child_sector = ClusterTrees.data(tree, child).sector
         child_pos = hilbert_positions[sfc_state][child_sector+1]+1
-        target_pos < child_pos  && (next_child = child; break)
+        target_pos < child_pos && break
         if child_sector == target_sector
-            return (child, target_center, target_size, target_sfc_state)
+            return child, target_center, target_size, target_sfc_state
         end
-        prev_child = child
+        pos = newpos
     end
+
     data = Data(target_sector, Int[])
-    new_node_idx = ClusterTrees.insert!(tree, data, next=next_child, prev=prev_child, parent=node_idx)
-    return new_node_idx, target_center, target_size, target_sfc_state
+    child = insert!(chds, data, pos)
+
+    return child, target_center, target_size, target_sfc_state
 end
-
-
-# function updater!(tree, (node, center, size), data)
-#     push!(ClusterTrees.data(tree, node).values, data)
-# end
 
 end # module

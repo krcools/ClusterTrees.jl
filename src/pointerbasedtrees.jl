@@ -92,25 +92,34 @@ special case of a parent node without any existing children, both `bef` and
 It may seem redundant to pass also `prev`, but this is a necessity of the single
 linked list implementation of `PointerBasedTree`.
 """
-function ClusterTrees.insert!(tree::PointerBasedTree, data; parent, next, prev)
-    push!(tree.nodes, Node(data, 0, next, parent, 0))
-    @assert !(parent < 1)
-
-    fs = firstchild(tree, parent)
-    if fs < 1 || fs == next
-        setfirstchild!(tree, parent, length(tree.nodes))
-    end
-    if !(prev < 1)
-        setnextsibling!(tree, prev, length(tree.nodes))
-    end
-    return length(tree.nodes)
-end
-
-
-# function Base.insert!(chd::ChildIterator{<:APBTree}, item, state)
-#     prev_idx, next_idx = state
-#     prnt_idx = chd.node
-#     push!(itr.tree.nodes, Node(data, 0, next_idx, prnt_idx, 0)
+# function ClusterTrees.insert!(tree::PointerBasedTree, data; parent, next, prev)
+#     push!(tree.nodes, Node(data, 0, next, parent, 0))
+#     @assert !(parent < 1)
+#
+#     fs = firstchild(tree, parent)
+#     if fs < 1 || fs == next
+#         setfirstchild!(tree, parent, length(tree.nodes))
+#     end
+#     if !(prev < 1)
+#         setnextsibling!(tree, prev, length(tree.nodes))
+#     end
+#     return length(tree.nodes)
 # end
+
+
+function Base.insert!(chd_itr::ChildIterator{<:APBTree}, item, state)
+    prev, next = state
+    parent = chd_itr.node
+
+    tree = chd_itr.tree
+    push!(tree.nodes, Node(data, 0, next, parent, 0))
+    this = lastindex(tree.nodes)
+    if prev < 1
+        setfirstchild!(tree, parent, this)
+    else
+        setnextsibling!(tree, prev, this)
+    end
+    return this
+end
 
 end

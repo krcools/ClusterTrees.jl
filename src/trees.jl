@@ -4,6 +4,8 @@ export update!
 # export insert!
 export root
 
+import Base.insert!
+
 """
 'children(tree, node)' returns a linked list of nodes. Searching and insertion are
 done more easily using the old traversal API based on 'start, next, done' as opposed

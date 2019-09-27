@@ -58,8 +58,8 @@ chd = ClusterTrees.children(tree2, ClusterTrees.root(tree2))
 i1 = ClusterTrees.SimpleTrees.start(chd)
 n1, i2 = ClusterTrees.SimpleTrees.next(chd, i1)
 n2, i3 = ClusterTrees.SimpleTrees.next(chd, i2)
-# ClusterTrees.SimpleTrees.insert!(chd, "Q", i3)
+insert!(chd, "Q", i3)
 
-# ClusterTrees.print_tree(tree)
+ClusterTrees.print_tree(tree)
 A = [ClusterTrees.data(mtree, n) for n in collect(ClusterTrees.DepthFirstIterator(mtree, root(mtree)))]
-# @test A == ["c","d","b","f","h","i","g","e","Q","a"]
+@test A == ["c","d","b","f","h","i","g","e","Q","a"]

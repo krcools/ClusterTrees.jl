@@ -5,6 +5,15 @@ export update!
 export root
 
 """
+'children(tree, node)' returns a linked list of nodes. Searching and insertion are
+done more easily using the old traversal API based on 'start, next, done' as opposed
+to the new API 'iterate'.
+"""
+function start end
+function done end
+function next end
+
+"""
     data(tree, node)
 
 Retrieve the data aka payload associated with the given node.

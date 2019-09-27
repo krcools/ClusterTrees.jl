@@ -3,6 +3,8 @@ module SimpleTrees
 # using AbstractTrees
 using ClusterTrees
 
+import ClusterTrees: start, next, done
+
 struct TreeNode{T}
     num_children::Int
     data::T

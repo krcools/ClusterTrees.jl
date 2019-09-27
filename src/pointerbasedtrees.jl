@@ -2,6 +2,7 @@ module PointerBasedTrees
 using ClusterTrees
 
 import ClusterTrees.ChildIterator
+import ClusterTrees: start, next, done
 
 mutable struct Node{T}
     data::T
@@ -24,18 +25,19 @@ nextsibling(tree::PointerBasedTree, node_idx) = getnode(tree, node_idx).next_sib
 parent(tree::PointerBasedTree, node_idx) = getnode(tree, node_idx).parent
 firstchild(tree::PointerBasedTree, node_idx) = getnode(tree, node_idx).first_child
 
-start(itr::ChildIterator{<:APBTree}) = firstchild(itr.tree, itr.node)
-# getnode(itr.tree, itr.node).first_child
+start(itr::ChildIterator{<:APBTree}) = (0, firstchild(itr.tree, itr.node))
 function done(itr::ChildIterator{<:APBTree}, state)
-    state < 1 && return true
-    sibling_par = parent(itr.tree, state)
+    prev, this = state
+    this < 1 && return true
+    sibling_par = parent(itr.tree, this)
     sibling_par != itr.node && return true
     return false
 end
 
 function next(itr::ChildIterator{<:APBTree}, state)
-    sibling_idx = nextsibling(itr.tree, state)
-    return (state, sibling_idx)
+    prev, this = state
+    nxt = nextsibling(itr.tree, this)
+    return (this, (this, nxt))
 end
 
 # Base.iterate(itr::ChildIterator) = iterate(itr, firstchild(itr.tree, itr.node))
@@ -103,5 +105,12 @@ function ClusterTrees.insert!(tree::PointerBasedTree, data; parent, next, prev)
     end
     return length(tree.nodes)
 end
+
+
+# function Base.insert!(chd::ChildIterator{<:APBTree}, item, state)
+#     prev_idx, next_idx = state
+#     prnt_idx = chd.node
+#     push!(itr.tree.nodes, Node(data, 0, next_idx, prnt_idx, 0)
+# end
 
 end

@@ -13,12 +13,12 @@ root_node = ClusterTrees.LevelledTrees.HNode(ClusterTrees.PointerBasedTrees.Node
 tree = ClusterTrees.LevelledTrees.LevelledTree([root_node], 1, root_center, root_size, Int[1])
 
 smallest_box_size = 0.1
-root_sector = 0
-root_sfc_state = 1
+root_sector = 2
+root_sfc_state = 2
 root_depth = 1
 for i in 1:length(points)
     target = ClusterTrees.LevelledTrees.Router(smallest_box_size, points[i])
-    root_state = root(tree), root_center, root_size, root_sfc_state, root_depth
+    root_state = root(tree), root_sector, root_center, root_size, root_sfc_state, root_depth
     ClusterTrees.update!(tree, root_state, i, target) do tree, node, data
         push!(ClusterTrees.data(tree,node).values, data)
     end

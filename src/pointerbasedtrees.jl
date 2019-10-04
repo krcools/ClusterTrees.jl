@@ -43,7 +43,7 @@ end
 
 Base.iterate(itr::ChildIterator{<:APBTree}, st = start(itr)) = done(itr,st) ? nothing : next(itr,st)
 
-Base.IteratorSize(cv::ChildIterator) = Base.SizeUnknown()
+# Base.IteratorSize(cv::ChildIterator) = Base.SizeUnknown()
 
 ClusterTrees.root(tree::PointerBasedTree) = tree.root
 ClusterTrees.children(tree::APBTree, node=ClusterTrees.root(tree)) = ChildIterator(tree, node)

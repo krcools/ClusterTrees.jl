@@ -22,6 +22,15 @@ struct LevelledTree{D,P,T} <: ClusterTrees.PointerBasedTrees.APBTree
     levels::Vector{Int}
 end
 
+function LevelledTree(center, size, data)
+    root = HNode(
+        ClusterTrees.PointerBasedTrees.Node(
+            ClusterTrees.LevelledTrees.Data(0,data),
+            0, 0, 0, 0),
+        0)
+    LevelledTree([root], 1, center, size, Int[1])
+end
+
 ClusterTrees.root(tree::LevelledTree) = tree.root
 ClusterTrees.data(tree::LevelledTree, node=ClusterTrees.root(tree)) = tree.nodes[node].node.data
 
@@ -170,6 +179,7 @@ function ClusterTrees.route!(tree::LevelledTree, state, destination)
         child_sector = ClusterTrees.data(tree,child).sector
         target_pos = hilbert_positions[target_sfc_state][target_sector+1] + 1
         child_pos = hilbert_positions[target_sfc_state][child_sector+1]+1
+        # print(child_pos, "-")
         target_pos < child_pos  && break
 
         # Did we find the route to the desitination? If so, take it!
@@ -183,6 +193,16 @@ function ClusterTrees.route!(tree::LevelledTree, state, destination)
     new_node_idx = insert!(chds, data, pos)
 
     return new_node_idx, target_sector, target_center, target_size, target_sfc_state
+end
+
+
+function rootstate(tree::LevelledTree, destination)
+    node = ClusterTrees.root(tree)
+    root_sector = 2
+    root_center = tree.center
+    root_size = tree.halfsize
+    root_sfc_state = 2
+    return node, root_sector, root_center, root_size, root_sfc_state
 end
 
 

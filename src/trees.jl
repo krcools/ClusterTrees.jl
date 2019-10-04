@@ -98,6 +98,7 @@ to the data residing at the desitination node.
 function update!(f, tree, state, data, target)
     while true
         next_state = route!(tree, state, target)
+        # println()
         next_state == state && break
         state = next_state
     end

@@ -5,35 +5,26 @@ using CompScienceMeshes
 const P = SVector{3,Float64}
 
 
-mesh = meshsphere(1.0, 0.15)
+mesh = meshsphere(1.0, 0.04)
 # points = [rand(P) for i in 1:800]
 points = vertices(mesh)
 points = [cartesian(CompScienceMeshes.center(chart(mesh, c))) for c in cells(mesh)]
 
-# using DelimitedFiles
-# Q = readdlm("points.dlm", Float64)
-# points = [SVector{3,Float64}(Q[i,:]) for i in axes(Q,1)]
-
 root_center = P(0,0,0)
 root_size = 1.0
-root_node = ClusterTrees.LevelledTrees.HNode(ClusterTrees.PointerBasedTrees.Node(ClusterTrees.LevelledTrees.Data(0,Int[]), 0, 0, 0, 0), 0)
-tree = ClusterTrees.LevelledTrees.LevelledTree([root_node], 1, root_center, root_size, Int[1])
+tree = ClusterTrees.LevelledTrees.LevelledTree(root_center, root_size, Int[])
 
-smallest_box_size = 0.1
-root_sector = 0
-root_sfc_state = 1
+smallest_box_size = 1.0 / 2.0^10
 for i in 1:length(points)
-    router = ClusterTrees.LevelledTrees.Router(smallest_box_size, points[i])
-    root_sector = 4
-    root_state = root(tree), root_sector, root_center, root_size, root_sfc_state
-    ClusterTrees.update!(tree, root_state, i, router) do tree, node, data
+    destination = (smallest_box_size = smallest_box_size, target_point = points[i])
+    root_state = ClusterTrees.LevelledTrees.rootstate(tree, destination)
+    ClusterTrees.update!(tree, root_state, i, destination) do tree, node, data
         push!(ClusterTrees.data(tree,node).values, data)
     end
 end
 
-ClusterTrees.print_tree(tree)
 
-num_bins = 3
+num_bins = 64
 bins = [P[] for i in 1:num_bins]
 
 num_printed = 0

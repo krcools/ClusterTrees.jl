@@ -1,3 +1,5 @@
+import Pkg; Pkg.activate(@__DIR__)
+
 using ClusterTrees
 using StaticArrays
 using CompScienceMeshes

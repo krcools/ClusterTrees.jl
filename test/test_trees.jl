@@ -30,6 +30,9 @@ ClusterTrees.print_tree(mtree)
 chd = ClusterTrees.children(mtree, ClusterTrees.root(mtree))
 i1 = ClusterTrees.SimpleTrees.start(chd)
 n1, i2 = ClusterTrees.SimpleTrees.next(chd, i1)
+@test depth(mtree, n1) == 2
+@test ClusterTrees.parent(mtree, n1) == root(mtree)
+@test depth(mtree, root(mtree)) == 1
 n2, i3 = ClusterTrees.SimpleTrees.next(chd, i2)
 ClusterTrees.SimpleTrees.insert!(chd, "Q", i3)
 

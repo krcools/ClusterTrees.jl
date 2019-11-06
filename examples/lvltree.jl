@@ -26,7 +26,7 @@ for i in 1:length(points)
 end
 
 
-num_bins = 64
+num_bins = 7
 bins = [P[] for i in 1:num_bins]
 
 num_printed = 0
@@ -63,4 +63,3 @@ for i in 1:length(bins)
     scatter!(x,y,z)
 end
 plot!(legend=false)
-gui()

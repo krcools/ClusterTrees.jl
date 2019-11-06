@@ -22,14 +22,14 @@ end
 
 getnode(tree::PointerBasedTree, node_idx) = tree.nodes[node_idx]
 nextsibling(tree::PointerBasedTree, node_idx) = getnode(tree, node_idx).next_sibling
-parent(tree::PointerBasedTree, node_idx) = getnode(tree, node_idx).parent
+ClusterTrees.parent(tree::PointerBasedTree, node_idx) = getnode(tree, node_idx).parent
 firstchild(tree::PointerBasedTree, node_idx) = getnode(tree, node_idx).first_child
 
 start(itr::ChildIterator{<:APBTree}) = (0, firstchild(itr.tree, itr.node))
 function done(itr::ChildIterator{<:APBTree}, state)
     prev, this = state
     this < 1 && return true
-    sibling_par = parent(itr.tree, this)
+    sibling_par = ClusterTrees.parent(itr.tree, this)
     sibling_par != itr.node && return true
     return false
 end

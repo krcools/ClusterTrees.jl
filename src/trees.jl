@@ -3,6 +3,8 @@ export children
 export update!
 # export insert!
 export root
+# export parent
+export depth
 
 import Base.insert!
 
@@ -54,6 +56,13 @@ implementation detail of the specific tree being used.
 function children end
 
 function haschildren end
+
+"""
+    parent(tree, node) -> parent_node
+
+Returns the parent of the current node.
+"""
+function parent end
 
 """
 Traverse the tree depth first, executing the function `f(tree, node, level)`
@@ -169,3 +178,18 @@ function. Creating nodes for the mutable view (using the `root` and `children` f
 will return enriched iterators that allow for insertion of child nodes.
 """
 mutable(tree) = Mutable(tree)
+
+"""
+    depth(tree, node) -> Int
+
+Returns the depth of a given node. The depth of the root node is 1.
+"""
+function depth(tree, node)
+    r = root(tree)
+    d = 1
+    while node != r
+        d += 1
+        node = parent(tree, node)
+    end
+    return d
+end

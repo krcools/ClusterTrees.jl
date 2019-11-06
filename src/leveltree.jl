@@ -33,9 +33,9 @@ end
 
 ClusterTrees.root(tree::LevelledTree) = tree.root
 ClusterTrees.data(tree::LevelledTree, node=ClusterTrees.root(tree)) = tree.nodes[node].node.data
+ClusterTrees.parent(tree::LevelledTree, node_idx) = tree.nodes[node_idx].node.parent
 
 ClusterTrees.PointerBasedTrees.nextsibling(tree::LevelledTree, node_idx) = tree.nodes[node_idx].node.next_sibling
-ClusterTrees.PointerBasedTrees.parent(tree::LevelledTree, node_idx) = tree.nodes[node_idx].node.parent
 ClusterTrees.PointerBasedTrees.firstchild(tree::LevelledTree, node_idx) = tree.nodes[node_idx].node.first_child
 height(tree::LevelledTree, node_idx) = tree.nodes[node_idx].height
 
@@ -70,7 +70,7 @@ function ClusterTrees.insert!(chd_itr::ClusterTrees.ChildIterator{<:LevelledTree
     h = 1
     while true
         setheight!(tree, id, max(height(tree,id),h))
-        id = ClusterTrees.PointerBasedTrees.parent(tree, id)
+        id = ClusterTrees.parent(tree, id)
         id < 1 && break
         h += 1
     end
@@ -78,7 +78,7 @@ function ClusterTrees.insert!(chd_itr::ClusterTrees.ChildIterator{<:LevelledTree
     depth = 1
     id = length(tree.nodes)
     while true
-        id = ClusterTrees.PointerBasedTrees.parent(tree, id)
+        id = ClusterTrees.parent(tree, id)
         id < 1 && break
         depth += 1
     end
@@ -179,7 +179,6 @@ function ClusterTrees.route!(tree::LevelledTree, state, destination)
         child_sector = ClusterTrees.data(tree,child).sector
         target_pos = hilbert_positions[target_sfc_state][target_sector+1] + 1
         child_pos = hilbert_positions[target_sfc_state][child_sector+1]+1
-        # print(child_pos, "-")
         target_pos < child_pos  && break
 
         # Did we find the route to the desitination? If so, take it!
@@ -211,7 +210,7 @@ function findprevnode(tree::LevelledTree, new_node)
     prev_node = 0
     prev_branch = 0
     node = new_node
-    parent = ClusterTrees.PointerBasedTrees.parent(tree, node)
+    parent = ClusterTrees.parent(tree, node)
     height = 1
     while true
         if parent < 1
@@ -229,7 +228,7 @@ function findprevnode(tree::LevelledTree, new_node)
             break
         end
         node = parent
-        parent = ClusterTrees.PointerBasedTrees.parent(tree, parent)
+        parent = ClusterTrees.parent(tree, parent)
         height += 1
     end
 
@@ -254,7 +253,7 @@ function findnextnode(tree::LevelledTree, new_node)
     prev_node = 0
     prev_branch = 0
     node = new_node
-    parent = ClusterTrees.PointerBasedTrees.parent(tree, node)
+    parent = ClusterTrees.parent(tree, node)
     height = 1
     while true
         if parent < 1
@@ -276,7 +275,7 @@ function findnextnode(tree::LevelledTree, new_node)
             break
         end
         node = parent
-        parent = ClusterTrees.PointerBasedTrees.parent(tree, parent)
+        parent = ClusterTrees.parent(tree, parent)
         height += 1
     end
 
@@ -309,5 +308,21 @@ end
 Base.IteratorSize(::LevelIterator) = Base.SizeUnknown()
 
 numlevels(t::LevelledTree) = length(t.levels)
+
+function box_center_size(tree::LevelledTree, node)
+
+    sectors = Int[]
+    while node != ClusterTrees.root(tree)
+        push!(sectors, ClusterTrees.data(tree, node).sector)
+        node = ClusterTrees.parent(tree, node)
+    end
+
+    ct, sz = tree.center, tree.halfsize
+    for sector in sectors
+        ct, sz = center_size(sector, ct, sz)
+    end
+
+    return ct, sz
+end
 
 end # module LevelledTrees

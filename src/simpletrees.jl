@@ -34,6 +34,7 @@ ClusterTrees.root(tree::ClusterTrees.Mutable{<:SimpleTree}) = [1]
 ClusterTrees.data(tree::ClusterTrees.Mutable{<:SimpleTree}, node) = tree.tree.nodes[last(node)].data
 ClusterTrees.children(tree::ClusterTrees.Mutable{<:SimpleTree}, node) = ClusterTrees.ChildIterator(tree, node)
 ClusterTrees.haschildren(tree::ClusterTrees.Mutable{<:SimpleTree}, node) = (tree.tree.nodes[last(node)].num_children > 0)
+ClusterTrees.parent(tree::ClusterTrees.Mutable{<:SimpleTree}, node) = node[1:end-1]
 
 start(itr::ClusterTrees.ChildIterator{ClusterTrees.Mutable{SimpleTree{N}}} where {N}) = 0
 done(itr::ClusterTrees.ChildIterator{ClusterTrees.Mutable{SimpleTree{N}}} where {N}, state) = (state == itr.tree.tree.nodes[last(itr.node)].num_children)

@@ -1,6 +1,6 @@
 name = "ClusterTrees"
 uuid = "5100927d-02aa-593a-b4f9-7235df19f0db"
-version = "0.2.0"
+version = "0.2.1"
 
 [deps]
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
@@ -8,7 +8,7 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 
 [compat]
-StaticArrays = "^0.8.3"
+StaticArrays = "^0.10, ^0.11, ^0.12, ^1.0"
 julia = "^1.0.0"
 
 [extras]

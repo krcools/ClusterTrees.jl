@@ -1,2 +1,5 @@
 [deps]
+ClusterTrees = "5100927d-02aa-593a-b4f9-7235df19f0db"
+CompScienceMeshes = "3e66a162-7b8c-5da0-b8f8-124ecd2c3ae1"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"

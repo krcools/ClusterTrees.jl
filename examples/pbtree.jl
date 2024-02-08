@@ -67,27 +67,48 @@ end
 
 import ClusterTrees: start, next, done
 
+# function ClusterTrees.route!(tree::ClusterTrees.PointerBasedTrees.PointerBasedTree, state, target)
+
+#     (parent, prev_fat_par, meta) = state
+#     reached(tree, target, meta) && return state
+
+#     meta = directions(tree, target, meta)
+#     prev_fat_child = prev_fat_par < 1 ? 0 : lastnonemptychild(tree, prev_fat_par)
+
+#     chds = children(tree, parent)
+#     pos = start(chds)
+#     while !done(chds, pos)
+#         child, newpos = next(chds, pos)
+#         isontherighttrack(tree, child, meta) && return (child, prev_fat_child, meta)
+#         ClusterTrees.haschildren(tree, child) && (prev_fat_child = child)
+#         pos = newpos
+#     end
+
+#     sector, center, size = meta
+#     child = insert!(chds, Data(sector), pos)
+
+#     return child, prev_fat_child, meta
+# end
+
+
 function ClusterTrees.route!(tree::ClusterTrees.PointerBasedTrees.PointerBasedTree, state, target)
 
-    (parent, prev_fat_par, meta) = state
+    (parent, meta) = state
     reached(tree, target, meta) && return state
 
     meta = directions(tree, target, meta)
-    prev_fat_child = prev_fat_par < 1 ? 0 : lastnonemptychild(tree, prev_fat_par)
-
     chds = children(tree, parent)
     pos = start(chds)
     while !done(chds, pos)
         child, newpos = next(chds, pos)
-        isontherighttrack(tree, child, meta) && return (child, prev_fat_child, meta)
-        ClusterTrees.haschildren(tree, child) && (prev_fat_child = child)
+        isontherighttrack(tree, child, meta) && return (child, meta)
         pos = newpos
     end
 
     sector, center, size = meta
     child = insert!(chds, Data(sector), pos)
 
-    return child, prev_fat_child, meta
+    return child, meta
 end
 
 const N = ClusterTrees.PointerBasedTrees.Node{Data}
@@ -96,10 +117,9 @@ tree = ClusterTrees.PointerBasedTrees.PointerBasedTree(
 
 function update!(f, tree::ClusterTrees.PointerBasedTrees.PointerBasedTree, i::Int, point, sms::Float64)
     router! = Router(point, sms)
-    prev_fat_child = 0
     root_sector, root_center, root_size = 0, SVector{3,Float64}(0,0,0), 1.0
     root_meta = root_sector, root_center, root_size
-    root_state = (root(tree), prev_fat_child, root_meta)
+    root_state = (root(tree), root_meta)
     ClusterTrees.update!(f, tree, root_state, i, router!)
 end
 

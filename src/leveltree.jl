@@ -169,6 +169,7 @@ function ClusterTrees.route!(tree::LevelledTree, state, destination)
     # Compute new state
     target_sector, target_center, target_size = sector_center_size(point, center, size)
     target_sfc_state = hilbert_states[sfc_state][sector+1] + 1
+    target_pos = hilbert_positions[target_sfc_state][target_sector+1] + 1
 
     chds = ClusterTrees.children(tree, node_idx)
     pos = start(chds)
@@ -177,7 +178,6 @@ function ClusterTrees.route!(tree::LevelledTree, state, destination)
 
         # Did we move past where the destination can be found? It so, give up!
         child_sector = ClusterTrees.data(tree,child).sector
-        target_pos = hilbert_positions[target_sfc_state][target_sector+1] + 1
         child_pos = hilbert_positions[target_sfc_state][child_sector+1]+1
         target_pos < child_pos  && break
 

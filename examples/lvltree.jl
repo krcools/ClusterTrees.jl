@@ -10,7 +10,7 @@ const P = SVector{3,Float64}
 mesh = meshsphere(1.0, 0.04)
 # points = [rand(P) for i in 1:800]
 points = vertices(mesh)
-points = [cartesian(CompScienceMeshes.center(chart(mesh, c))) for c in cells(mesh)]
+points = [cartesian(CompScienceMeshes.center(chart(mesh, c))) for c in mesh]
 
 root_center = P(0,0,0)
 root_size = 1.0
